@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: Albums API
+  description: Simple API for managing albums and lists
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+paths:
+  # -------------------------
+  # Albums
+  # -------------------------
+  /albums/{id}:
+    get:
+      summary: Get an album by ID
+      description: Returns a single album
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Album ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Album found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Album"
+        "400":
+          description: Invalid album ID
+        "404":
+          description: Album not found
+
+  /albums/search:
+    get:
+      summary: Search albums by query
+      description: Returns a list of albums from Spotify matching the search query
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Album"
+        "400":
+          description: Query parameter missing
+        "500":
+          description: Internal server error
+
+  # -------------------------
+  # Lists
+  # -------------------------
+  /lists:
+    post:
+      summary: Create a new list
+      description: Creates a new list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+      responses:
+        "201":
+          description: List created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/List"
+        "400":
+          description: Invalid request body
+        "500":
+          description: Internal server error
+
+  /lists/{id}:
+    get:
+      summary: Get a list by ID
+      description: Returns a single list with all associated albums
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: List ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: List found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListWithAlbums"
+        "400":
+          description: Invalid list ID
+        "404":
+          description: List not found
+
+  /lists/{id}/albums/{album_id}:
+    post:
+      summary: Add an album to a list
+      description: Adds an album to a list, creating the album in the database if it doesn’t exist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: List ID
+          schema:
+            type: integer
+            format: int64
+        - name: album_id
+          in: path
+          required: true
+          description: Spotify album ID
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Album added to list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list_id:
+                    type: integer
+                    format: int64
+                  album_id:
+                    type: integer
+                    format: int64
+                  spotify_id:
+                    type: string
+                  message:
+                    type: string
+        "400":
+          description: Invalid list ID or album ID
+        "404":
+          description: List not found
+        "500":
+          description: Internal server error
+
+components:
+  schemas:
+    Album:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        image_url:
