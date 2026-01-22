@@ -21,6 +21,7 @@ RUN apk add --no-cache sqlite-libs
 WORKDIR /app
 
 COPY --from=builder /app/music_api .
+COPY --from=builder /app/db ./db
 
 EXPOSE 8080
 
