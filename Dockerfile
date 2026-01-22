@@ -13,6 +13,7 @@ COPY . .
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
     go build -o music_api ./cmd/music_app
 
+# ===== Runtime stage =====
 FROM alpine:latest
 
 RUN apk add --no-cache sqlite-libs
@@ -20,7 +21,6 @@ RUN apk add --no-cache sqlite-libs
 WORKDIR /app
 
 COPY --from=builder /app/music_api .
-COPY --from=builder /app/albums.db ./albums.db
 
 EXPOSE 8080
 
